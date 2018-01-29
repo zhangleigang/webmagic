@@ -11,9 +11,15 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId> 
+            <artifactId>httpclient</artifactId>
+            <version>4.4-beta1</version>
+        </dependency>
+        
+        <dependency>
             <groupId>us.codecraft</groupId>
             <artifactId>webmagic-core</artifactId>
-            <version>${project.version}</version>
+            <version>0.7.3 beta</version>
         </dependency>
         <dependency>
             <groupId>us.codecraft</groupId>
