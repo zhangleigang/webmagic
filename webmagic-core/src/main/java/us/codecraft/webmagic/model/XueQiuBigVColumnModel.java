@@ -22,25 +22,16 @@ import org.apache.commons.io.IOUtils;
 
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
-import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.selector.JsonPathSelector;
 
 public class XueQiuBigVColumnModel implements AfterExtractor {
-	
-    private String fileUrlAllName = "/home/zhangleigang/webmagic/XueQiuBigVColumn/tmp.urls.txt";
 
-    private Task task;
+    private String fileUrlAllName = "E:\\tmp.urls.txt";
 
     private PrintWriter fileUrlWriter;
 
-    private AtomicInteger cursor = new AtomicInteger();
+    private Set<String> lines;
 
-    private AtomicBoolean inited = new AtomicBoolean(false);
-
-    private BlockingQueue<Request> queue;
-
-    private Set<String> urls;
-    
     private ScheduledExecutorService flushThreadPool;
 
     private void flush() {
@@ -51,7 +42,7 @@ public class XueQiuBigVColumnModel implements AfterExtractor {
         if (!filePath.endsWith("/") && !filePath.endsWith("\\")) {
             filePath += "/";
         }
-        
+
         File file = new File(filePath);
         if (!file.exists()) {
             file.mkdirs();
@@ -59,7 +50,6 @@ public class XueQiuBigVColumnModel implements AfterExtractor {
         readFile();
         initWriter();
         initFlushThread();
-        inited.set(true);
     }
 
     private void initFlushThread() {
@@ -72,6 +62,14 @@ public class XueQiuBigVColumnModel implements AfterExtractor {
         }, 10, 10, TimeUnit.SECONDS);
     }
 
+    private void readFile() {
+        try {
+            readUrlFile();
+        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
+        }
+    }
+
     private void initWriter() {
         try {
             fileUrlWriter = new PrintWriter(new FileWriter(getFileName(fileUrlAllName), true));
@@ -80,28 +78,13 @@ public class XueQiuBigVColumnModel implements AfterExtractor {
         }
     }
 
-    private void readFile() {
-        try {
-            queue = new LinkedBlockingQueue<Request>();
-            urls = new LinkedHashSet<String>();
-            readUrlFile();
-        } catch (FileNotFoundException e) {
-        } catch (IOException e) {
-        }
-    }
-
     private void readUrlFile() throws IOException {
         String line;
         BufferedReader fileUrlReader = null;
         try {
             fileUrlReader = new BufferedReader(new FileReader(getFileName(fileUrlAllName)));
-            int lineReaded = 0;
             while ((line = fileUrlReader.readLine()) != null) {
-                urls.add(line.trim());
-                lineReaded++;
-                if (lineReaded > cursor.get()) {
-                    queue.add(new Request(line));
-                }
+                lines.add(line.trim());
             }
         } finally {
             if (fileUrlReader != null) {
@@ -109,9 +92,9 @@ public class XueQiuBigVColumnModel implements AfterExtractor {
             }
         }
     }
-    
+
     public void close() throws IOException {
-		flushThreadPool.shutdown();	
+		flushThreadPool.shutdown();
 		fileUrlWriter.close();
 	}
 
