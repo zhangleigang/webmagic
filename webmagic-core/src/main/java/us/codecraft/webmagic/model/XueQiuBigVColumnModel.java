@@ -10,7 +10,7 @@ import java.io.PrintWriter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
 
 import us.codecraft.webmagic.Page;
+import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.selector.JsonPathSelector;
 
 import org.apache.http.NameValuePair;
@@ -107,7 +108,11 @@ public class XueQiuBigVColumnModel implements AfterExtractor {
 
 	@Override
 	public void afterProcess(Page page) {
-        String maxPage = new JsonPathSelector("$.maxPage").selectList(page.getRawText()).toString();
+		int maxPage = 1;
+		List<String> maxPageList = new JsonPathSelector("$.maxPage").selectList(page.getRawText());
+		for (String list : maxPageList) {
+			maxPage = Integer.parseInt(list);
+		}
 		String url = page.getUrl().toString();
 		List<NameValuePair> params = null;
 
@@ -120,8 +125,10 @@ public class XueQiuBigVColumnModel implements AfterExtractor {
 
 		for (NameValuePair param : params) {
 			int currentPage = Integer.parseInt(param.getValue());
-            if(param.getName() == "page" && currentPage < Integer.parseInt(maxPage)){
-            	currentPage++;
+			currentPage++;
+            if(param.getName().equals("page") && currentPage <= maxPage){
+            	//ArrayList<Request> newUrlRequest = new ArrayList<Request>();
+            	//newUrlRequest.add(new Request("https://xueqiu.com/statuses/original/timeline.json?user_id=1955602780&page=" + currentPage));
                 page.addTargetRequest("https://xueqiu.com/statuses/original/timeline.json?user_id=1955602780&page=" + currentPage);
             }
 		}
@@ -139,10 +146,11 @@ public class XueQiuBigVColumnModel implements AfterExtractor {
 				lines.add(line);
 			}
 		}
-
-		/*
-		 * try { close(); } catch (IOException e) { // TODO 自动生成的 catch 块
-		 * e.printStackTrace(); }
-		 */
+		
+		try {
+			close();
+		} catch (IOException e) { // TODO 自动生成的 catch 块
+			e.printStackTrace();
+		}
 	}
 }
