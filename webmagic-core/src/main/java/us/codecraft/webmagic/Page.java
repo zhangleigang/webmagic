@@ -52,7 +52,7 @@ public class Page {
     private List<Request> targetRequests = new ArrayList<Request>();
 
     private String charset;
-    
+
     public Page() {
     }
 
